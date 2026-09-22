@@ -1,4 +1,5 @@
 #import "EnterpriseCompare.h"
+#import "Utils.h"
 #import <CommonCrypto/CommonCrypto.h>
 
 @implementation EnterpriseCompare
@@ -8,7 +9,7 @@
 	NSArray* modsDir = [fm contentsOfDirectoryAtPath:[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"mods"] error:nil];
 	if (!helper) {
 		NSURL* docPath = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
-		NSURL* bundlePath = [[docPath URLByAppendingPathComponent:@"Applications"] URLByAppendingPathComponent:@"com.dort.novadashhhhhhh.app"];
+		NSURL* bundlePath = [[docPath URLByAppendingPathComponent:@"Applications"] URLByAppendingPathComponent:[Utils gdBundleName]];
 		modsDir = [fm contentsOfDirectoryAtPath:[bundlePath.path stringByAppendingPathComponent:@"mods"] error:nil];
 	}
 	for (NSString* file in modsDir) {
@@ -38,7 +39,7 @@
 	NSArray* modsDir = [fm contentsOfDirectoryAtPath:[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"mods"] error:&err];
 	if (!helper) {
 		NSURL* docPath = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
-		NSURL* bundlePath = [[docPath URLByAppendingPathComponent:@"Applications"] URLByAppendingPathComponent:@"com.dort.novadashhhhhhh.app"];
+		NSURL* bundlePath = [[docPath URLByAppendingPathComponent:@"Applications"] URLByAppendingPathComponent:[Utils gdBundleName]];
 		modsDir = [fm contentsOfDirectoryAtPath:[bundlePath.path stringByAppendingPathComponent:@"mods"] error:nil];
 	}
 	if (err || modsDir.count == 0) {
