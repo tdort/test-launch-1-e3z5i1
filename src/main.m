@@ -873,7 +873,7 @@ int GeodeMain(int argc, char* argv[]) {
 										return;
 									}
 									AppLog(@"Sign (2/3)");
-									LCAppInfo* app = [[LCAppInfo alloc] initWithBundlePath:[[LCPath bundlePath] URLByAppendingPathComponent:@"com.dort.novadashhhhhhh.app"].path];
+									LCAppInfo* app = [[LCAppInfo alloc] initWithBundlePath:[[LCPath bundlePath] URLByAppendingPathComponent:[Utils gdBundleName]].path];
 									[app patchExecAndSignIfNeedWithCompletionHandler:^(BOOL signSuccess, NSString* signError) {
 										AppLog(@"Sign (3/3)");
 										if (signError) {
