@@ -70,7 +70,7 @@ Class LCSharedUtilsClass = nil;
 	if ([[Utils getPrefs] boolForKey:@"MANUAL_REOPEN"])
 		return NO;
 	if (![Utils isSandboxed]) {
-		NSString* appBundleIdentifier = @"com.dort.novadashhhhhhh";
+		NSString* appBundleIdentifier = [Utils gdBundleID];
 		[[LSApplicationWorkspace defaultWorkspace] openApplicationWithBundleID:appBundleIdentifier];
 		return YES;
 	}
@@ -152,8 +152,8 @@ Class LCSharedUtilsClass = nil;
 	}
 
 	NSFileManager* fm = [NSFileManager defaultManager];
-	NSURL* justIncase = [[LCPath bundlePath] URLByAppendingPathComponent:@"com.dort.novadashhhhhhh.app"];
-	NSURL* bundleProvision = [[LCPath bundlePath] URLByAppendingPathComponent:@"com.dort.novadashhhhhhh.app/embedded.mobileprovision"];
+	NSURL* justIncase = [[LCPath bundlePath] URLByAppendingPathComponent:[Utils gdBundleName]];
+	NSURL* bundleProvision = [[LCPath bundlePath] URLByAppendingPathComponent:[[Utils gdBundleName] stringByAppendingString:@"/embedded.mobileprovision"]];
 	NSURL* provisionURL = [[LCPath docPath] URLByAppendingPathComponent:@"embedded.mobileprovision"];
 	if ([[NSFileManager defaultManager] fileExistsAtPath:provisionURL.path]) {
 		AppLog(@"Found provision in documents, copying to GD bundle...");
