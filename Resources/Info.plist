@@ -7,7 +7,7 @@
 	<key>CFBundleName</key>
 	<string>NovaGeode</string>
 	<key>CFBundleExecutable</key>
-	<string>NovaGeode</string>
+	<string>Geode</string>
 	<key>CADisableMinimumFrameDuration</key>
 	<true/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
