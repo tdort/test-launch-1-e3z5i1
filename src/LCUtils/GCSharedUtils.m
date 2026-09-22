@@ -219,7 +219,7 @@ extern NSBundle* gcMainBundle;
 		return;
 	}
 	if (![Utils isSandboxed]) {
-		NSString* appBundleIdentifier = @"com.dort.novadashhhhhhh";
+		NSString* appBundleIdentifier = [Utils gdBundleID];
 		[[LSApplicationWorkspace defaultWorkspace] openApplicationWithBundleID:appBundleIdentifier];
 		exit(0);
 		return;
