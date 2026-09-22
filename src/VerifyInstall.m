@@ -47,7 +47,7 @@ BOOL hasDoneUpdate = NO;
 															preferredStyle:UIAlertControllerStyleAlert];
 
 	UIAlertAction* launchAction = [UIAlertAction actionWithTitle:@"common.ok".loc style:UIAlertActionStyleDefault handler:^(UIAlertAction* _Nonnull action) {
-		BOOL canLaunch = [VerifyInstall canLaunchAppWithBundleID:@"com.dort.novadashhhhhhh"];
+		BOOL canLaunch = [VerifyInstall canLaunchAppWithBundleID:[Utils gdBundleID]];
 		if (!canLaunch) {
 			UIAlertController* resultAlert = [UIAlertController alertControllerWithTitle:@"Error" message:@"launcher.verify-gd.error".loc
 																		  preferredStyle:UIAlertControllerStyleAlert];
