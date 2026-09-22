@@ -429,7 +429,7 @@ typedef void (^DecompressCompletion)(NSError* _Nullable error);
 	if (![Utils isSandboxed]) {
 		gdPlist = [NSDictionary dictionaryWithContentsOfFile:[[Utils getGDBundlePath] stringByAppendingPathComponent:@"NovaDash.app/Info.plist"]];
 	} else {
-		gdPlist = [NSDictionary dictionaryWithContentsOfURL:[[LCPath bundlePath] URLByAppendingPathComponent:@"com.dort.novadashhhhhhh.app/Info.plist"]];
+		gdPlist = [NSDictionary dictionaryWithContentsOfURL:[[LCPath bundlePath] URLByAppendingPathComponent:[[Utils gdBundleName] stringByAppendingString:@"/Info.plist"]]];
 	}
 	NSString* hash = gdPlist[@"CFBundleShortVersionString"];
 	AppLog(@"Versions: %@ & %@", hash, GD_VERSION);
