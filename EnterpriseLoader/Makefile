@@ -5,8 +5,8 @@ LIBRARY_NAME = EnterpriseLoader
 EnterpriseLoader_FILES = \
     EnterpriseLoader.m \
     ../src/Utils.m \
-    ../src/LCUtils/unarchive.m \
-    ../src/EnterpriseCompare.m
+    ../src/EnterpriseCompare.m \
+    $(wildcard ../src/LCUtils/*.m)
 
 EnterpriseLoader_CFLAGS = -fobjc-arc
 EnterpriseLoader_LIBRARIES = archive
