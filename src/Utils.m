@@ -47,6 +47,8 @@ extern SecTaskRef SecTaskCreateFromSelf(CFAllocatorRef allocator) __attribute__(
 
 		Class LSApplicationWorkspace_class = objc_getClass("LSApplicationWorkspace");
 		if (LSApplicationWorkspace_class) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 			id workspace = [LSApplicationWorkspace_class performSelector:@selector(defaultWorkspace)];
 			SEL allAppsSelector = NSSelectorFromString(@"allInstalledApplications");
 			if (workspace && [workspace respondsToSelector:allAppsSelector]) {
@@ -56,6 +58,7 @@ extern SecTaskRef SecTaskCreateFromSelf(CFAllocatorRef allocator) __attribute__(
 				} @catch (NSException* e) {
 					apps = nil;
 				}
+#pragma clang diagnostic pop
 				NSString* prefixWithDot = [baseID stringByAppendingString:@"."];
 				for (id app in apps) {
 					NSString* bid = nil;
@@ -623,7 +626,17 @@ extern SecTaskRef SecTaskCreateFromSelf(CFAllocatorRef allocator) __attribute__(
 		[fm createFileAtPath:geode_env contents:[safeModeEnv dataUsingEncoding:NSUTF8StringEncoding] attributes:@{}];
 	}
 
-	[[LSApplicationWorkspace defaultWorkspace] openApplicationWithBundleID:[Utils gdBundleID]];
+	Class LSApplicationWorkspace_class = objc_getClass("LSApplicationWorkspace");
+	if (LSApplicationWorkspace_class) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+		id workspace = [LSApplicationWorkspace_class performSelector:@selector(defaultWorkspace)];
+		SEL openSelector = NSSelectorFromString(@"openApplicationWithBundleID:");
+		if (workspace && [workspace respondsToSelector:openSelector]) {
+			[workspace performSelector:openSelector withObject:[Utils gdBundleID]];
+		}
+#pragma clang diagnostic pop
+	}
 }
 
 + (NSString*)colorToHex:(UIColor*)color {
