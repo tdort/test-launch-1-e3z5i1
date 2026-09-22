@@ -30,8 +30,61 @@ extern SecTaskRef SecTaskCreateFromSelf(CFAllocatorRef allocator) __attribute__(
 + (NSString*)launcherBundleName {
 	return @"com.geode.launcher";
 }
+// Base ID as originally signed. SideStore/AltStore on a free developer account
+// append the Team ID to the bundle identifier when resigning (e.g.
+// "com.dort.novadashhhhhhh.7WZA7WW822") to avoid the 10 App ID limit, so the
+// literal ID below usually won't match what's actually installed on device.
+// gdBundleID resolves the *real* installed bundle ID at runtime by scanning
+// installed apps for one that starts with this base ID, falling back to the
+// base ID itself (e.g. jailbreak/TrollStore/paid-account installs where no
+// suffix is added).
++ (NSString*)gdBundleID {
+	static NSString* resolvedGDBundleID = nil;
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+		NSString* baseID = @"com.dort.novadashhhhhhh";
+		resolvedGDBundleID = baseID;
+
+		Class LSApplicationWorkspace_class = objc_getClass("LSApplicationWorkspace");
+		if (LSApplicationWorkspace_class) {
+			id workspace = [LSApplicationWorkspace_class performSelector:@selector(defaultWorkspace)];
+			SEL allAppsSelector = NSSelectorFromString(@"allInstalledApplications");
+			if (workspace && [workspace respondsToSelector:allAppsSelector]) {
+				NSArray* apps = nil;
+				@try {
+					apps = [workspace performSelector:allAppsSelector];
+				} @catch (NSException* e) {
+					apps = nil;
+				}
+				NSString* prefixWithDot = [baseID stringByAppendingString:@"."];
+				for (id app in apps) {
+					NSString* bid = nil;
+					@try {
+						bid = [app valueForKey:@"applicationIdentifier"];
+					} @catch (NSException* e) {
+						bid = nil;
+					}
+					if (![bid isKindOfClass:[NSString class]])
+						continue;
+					if ([bid isEqualToString:baseID]) {
+						// exact match exists (paid account / jailbreak / TrollStore), stop here
+						resolvedGDBundleID = bid;
+						break;
+					}
+					if ([bid hasPrefix:prefixWithDot]) {
+						// suffixed match (free account resign), keep looking in case
+						// an exact match also exists, but remember this as a candidate
+						resolvedGDBundleID = bid;
+					}
+				}
+			}
+		}
+	});
+	return resolvedGDBundleID;
+}
+
 + (NSString*)gdBundleName {
-	return @"com.dort.novadashhhhhhh.app";
+	return [[Utils gdBundleID] stringByAppendingString:@".app"];
 	// return @"GeometryDash";
 }
 + (BOOL)isJailbroken {
@@ -285,7 +338,7 @@ extern SecTaskRef SecTaskCreateFromSelf(CFAllocatorRef allocator) __attribute__(
 	if ([[Utils getPrefs] boolForKey:@"HELPER_IPA_DOCS"]) {
 		[fm removeItemAtPath:[[LCPath docPath] URLByAppendingPathComponent:@"Helper.ipa"].path error:nil];
 	}
-	NSString* fileToExtract = [[LCPath bundlePath] URLByAppendingPathComponent:@"com.dort.novadashhhhhhh.app"].path;
+	NSString* fileToExtract = [[LCPath bundlePath] URLByAppendingPathComponent:[Utils gdBundleName]].path;
 	NSString* extractionPath = [[fm temporaryDirectory] URLByAppendingPathComponent:@"Helper.ipa"].path;
 	if ([[Utils getPrefs] boolForKey:@"HELPER_IPA_DOCS"]) {
 		extractionPath = [[LCPath docPath] URLByAppendingPathComponent:@"Helper.ipa"].path;
@@ -332,8 +385,8 @@ extern SecTaskRef SecTaskCreateFromSelf(CFAllocatorRef allocator) __attribute__(
 	}
 	// probably the most inefficient way of getting a bundle id, i need to figure out another way of doing this because this is just bad...
 	for (NSString* dir in dirs) {
-		NSString* checkPrefsA = [NSString stringWithFormat:@"/var/mobile/Containers/Data/Application/%@/Library/HTTPStorages/com.dort.novadashhhhhhh", dir];
-		NSString* checkPrefsB = [NSString stringWithFormat:@"/var/mobile/Containers/Data/Application/%@/tmp/com.dort.novadashhhhhhh-Inbox", dir];
+		NSString* checkPrefsA = [NSString stringWithFormat:@"/var/mobile/Containers/Data/Application/%@/Library/HTTPStorages/%@", dir, [Utils gdBundleID]];
+		NSString* checkPrefsB = [NSString stringWithFormat:@"/var/mobile/Containers/Data/Application/%@/tmp/%@-Inbox", dir, [Utils gdBundleID]];
 		NSString* checkPrefsC = [NSString stringWithFormat:@"/var/mobile/Containers/Data/Application/%@/.com.apple.mobile_container_manager.metadata.plist", dir];
 		if ([fm fileExistsAtPath:checkPrefsA isDirectory:nil] || [fm fileExistsAtPath:checkPrefsB isDirectory:nil]) {
 			gdDocPath = [NSString stringWithFormat:@"/var/mobile/Containers/Data/Application/%@/", dir];
@@ -341,7 +394,7 @@ extern SecTaskRef SecTaskCreateFromSelf(CFAllocatorRef allocator) __attribute__(
 		} else if ([fm fileExistsAtPath:checkPrefsC isDirectory:nil]) {
 			NSDictionary* plist = [NSDictionary dictionaryWithContentsOfFile:checkPrefsC];
 			if (plist) {
-				if (plist[@"MCMMetadataIdentifier"] && [plist[@"MCMMetadataIdentifier"] isEqualToString:@"com.dort.novadashhhhhhh"]) {
+				if (plist[@"MCMMetadataIdentifier"] && ([plist[@"MCMMetadataIdentifier"] isEqualToString:[Utils gdBundleID]] || [plist[@"MCMMetadataIdentifier"] hasPrefix:@"com.dort.novadashhhhhhh"])) {
 					gdDocPath = [NSString stringWithFormat:@"/var/mobile/Containers/Data/Application/%@/", dir];
 					return gdDocPath;
 				}
@@ -466,7 +519,10 @@ extern SecTaskRef SecTaskCreateFromSelf(CFAllocatorRef allocator) __attribute__(
 	return output;
 }
 + (BOOL)isContainerized {
-	return [[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"com.dort.novadashhhhhhh"];
+	// checked from inside the GD process itself, so just compare our own
+	// bundle ID against the base prefix rather than relying on the resolved
+	// gdBundleID lookup (handles the free-account Team ID suffix too).
+	return [[[NSBundle mainBundle] bundleIdentifier] hasPrefix:@"com.dort.novadashhhhhhh"];
 }
 + (BOOL)isSandboxed {
 	if (checkedSandboxed)
@@ -567,7 +623,7 @@ extern SecTaskRef SecTaskCreateFromSelf(CFAllocatorRef allocator) __attribute__(
 		[fm createFileAtPath:geode_env contents:[safeModeEnv dataUsingEncoding:NSUTF8StringEncoding] attributes:@{}];
 	}
 
-	[[LSApplicationWorkspace defaultWorkspace] openApplicationWithBundleID:@"com.dort.novadashhhhhhh"];
+	[[LSApplicationWorkspace defaultWorkspace] openApplicationWithBundleID:[Utils gdBundleID]];
 }
 
 + (NSString*)colorToHex:(UIColor*)color {
