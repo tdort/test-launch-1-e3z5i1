@@ -32,3 +32,4 @@
 - (void)launchHelper:(BOOL)safeMode;
 - (void)updatePatchStatus;
 - (void)updateLogoImage:(NSInteger)index;
+@end
