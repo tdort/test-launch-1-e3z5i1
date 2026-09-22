@@ -78,4 +78,5 @@
 @interface LSApplicationWorkspace : NSObject
 + (instancetype)defaultWorkspace;
 - (BOOL)openApplicationWithBundleID:(NSString*)arg1;
+- (NSArray*)allInstalledApplications;
 @end
